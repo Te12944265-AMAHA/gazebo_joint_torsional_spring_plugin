@@ -1,6 +1,7 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
+#include <ros/ros.h>
 
 namespace gazebo
 {
@@ -25,6 +26,14 @@ namespace gazebo
 
 		public: void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 		{
+			// Make sure the ROS node for Gazebo has already been initialized
+			if (!ros::isInitialized())
+			{
+				ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, "
+				<< "unable to load plugin. Load the Gazebo system plugin "
+				<< "'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+				return;
+			}
 			// Safety check
 			if (_model->GetJointCount() == 0)
 			{
@@ -69,7 +78,7 @@ namespace gazebo
 
 		protected: void OnUpdate()
 		{
-			double current_angle = this->joint->GetAngle(0).Radian();
+			double current_angle = this->joint->Position(0);//GetAngle(0).Radian();
 			this->joint->SetForce(0, this->kx*(this->setPoint-current_angle));			
 		}
 		
